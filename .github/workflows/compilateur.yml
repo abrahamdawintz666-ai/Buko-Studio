@@ -55,6 +55,12 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y git zip unzip openjdk-17-jdk fontconfig libsqlite3-dev libgdbm-dev libdb5.3-dev libpcap-dev liblzma-dev libffi-dev libssl-dev
         pip install --user --upgrade buildozer cython virtualenv
+        
+        # Ligne magique : On accepte automatiquement toutes les licences Android SDK de Google
+        mkdir -p ~/.android
+        touch ~/.android/repositories.cfg
+        yes | sdkmanager --licenses || true
+        
         ~/.local/bin/buildozer init
         sed -i 's/# requirements = kivy/requirements = kivy, python3/' buildozer.spec
 
