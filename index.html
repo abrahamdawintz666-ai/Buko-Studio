@@ -67,23 +67,27 @@
     <div class="generate-bar">
         <button class="gen-btn" id="btnGen" onclick="genererApplication()">Générer mon Application Autonome</button>
     </div>
-        <script>
+         <script>
         let langueActuelle = 'FR';
         let cibleSysteme = 'web'; 
         const outils = {
             'FR': [
-                { nom: '🗂️ Section : Dashboard', code: '[Espace Dashboard]' },
-                { nom: '📱 Graphique : Bouton Vert', code: 'bouton bouton_valider [texte: "Encaisser", couleur: Vert] .' },
-                { nom: '📱 Graphique : Bouton Bleu', code: 'bouton bouton_annuler [texte: "Effacer", couleur: Bleu] .' },
-                { nom: '📝 Graphique : Afficher Texte', code: 'affichage_texte statut_barre [contenu: "Système prêt."] .' },
-                { nom: '📥 Graphique : Zone Saisie', code: 'zone_saisie nom_produit [indication: "Nom de l\'article"] .' }
+                { nom: '📦 Importer une Bibliothèque', code: 'importer: Google_OR_Tools .' },
+                { nom: '🖥️ Environnement : Bureau (Tkinter)', code: 'appli: bureau .' },
+                { nom: '📱 Environnement : Mobile (Kivy)', code: 'appli: mobile .' },
+                { nom: '🌐 Environnement : Site (Flask)', code: 'appli: web .' },
+                { nom: '🗂️ Section : Terrain de Jeu', code: '[Espace Terrain PingPong]' },
+                { nom: '📱 Graphique : Créer Bouton Vert', code: 'bouton bouton_valider [texte: "Lancer", couleur: Vert] .' },
+                { nom: '📝 Graphique : Afficher Texte', code: 'affichage_texte score [contenu: "Score : 0"] .' }
             ],
             'EN': [
-                { nom: '🗂️ Section: Dashboard', code: '[Espace Dashboard]' },
-                { nom: '📱 Graphic: Green Button', code: 'button bouton_valider [text: "Submit", color: Green] .' },
-                { nom: '📱 Graphic: Blue Button', code: 'button bouton_annuler [text: "Clear", color: Blue] .' },
-                { nom: '📝 Graphic: Text Display', code: 'text_display statut_barre [content: "Ready."] .' },
-                { nom: '📥 Graphic: Input Field', code: 'input_field nom_produit [indication: "Item name"] .' }
+                { nom: '📦 Import a Library', code: 'importer: Google_OR_Tools .' },
+                { nom: '🖥️ Environment : Desktop (Tkinter)', code: 'appli: bureau .' },
+                { nom: '📱 Environment : Mobile (Kivy)', code: 'appli: mobile .' },
+                { nom: '🌐 Environment : Site (Flask)', code: 'appli: web .' },
+                { nom: '🗂️ Section: Game Field', code: '[Espace Terrain PingPong]' },
+                { nom: '📱 Graphic: Green Button', code: 'button bouton_valider [text: "Start", color: Green] .' },
+                { nom: '📝 Graphic: Text Display', code: 'text_display score [content: "Score : 0"] .' }
             ]
         };
         function toggleMenu() { document.getElementById('dropdownMenu').classList.toggle('show'); }
@@ -131,6 +135,23 @@
                 }
                 if (!l.endsWith('.')) return;
                 l = l.slice(0, -1).trim(); 
+
+                // Nouvelle Détection de la commande "importer:"
+                if (l.startsWith('importer:') || l.startsWith('import:')) {
+                    let libName = l.split(':')[1].trim();
+                    let banner = document.createElement('div');
+                    banner.className = 'buko-text';
+                    banner.style.background = '#fff3cd';
+                    banner.style.color = '#856404';
+                    banner.style.padding = '10px';
+                    banner.style.borderRadius = '5px';
+                    banner.style.border = '1px solid #ffeeba';
+                    banner.style.fontSize = '0.9rem';
+                    banner.innerText = `⚙️ BuKo Package Manager : Téléchargement et intégration de la bibliothèque "${libName}" en cours...`;
+                    canvas.appendChild(banner);
+                    return;
+                }
+
                 if (l.startsWith('appli:')) {
                     let parts = l.split(':');
                     if(parts.length > 1) {
@@ -172,86 +193,42 @@
                 }
             });
         }
-                function genererApplication() {
+        async function genererApplication() {
             const HTML_Contenu = document.getElementById('canvas').innerHTML;
             const codeSource = document.getElementById('codeEditor').value;
-            if(!codeSource.trim()) { alert("Votre application est vide !"); return; }
-            
+            if(!HTML_Contenu.trim()) { alert("Votre application est vide !"); return; }
             let scriptActions = "";
-
-            // Si le code contient le mot "PingPong" ou "jeu", on injecte le vrai moteur de jeu de Ping-Pong
             if (codeSource.includes('PingPong') || codeSource.includes('jeu')) {
                 scriptActions = `
                     let canvasJeu = document.createElement('canvas');
-                    canvasJeu.id = 'gameCanvas';
-                    canvasJeu.width = 400; canvasJeu.height = 300;
-                    canvasJeu.style.background = '#000'; canvasJeu.style.display = 'block'; canvasJeu.style.margin = '20px auto';
-                    document.getElementById('canvas').appendChild(canvasJeu);
-                    
+                    canvasJeu.id = 'gameCanvas'; canvasJeu.width = 400; canvasJeu.height = 300;
+                    canvasJeu.style.background = '#000'; canvasJeu.style.display = 'block'; canvasJeu.style.margin = '25px auto';
+                    document.body.appendChild(canvasJeu);
                     let ctx = canvasJeu.getContext('2d');
-                    let rG = 110, rD = 110, bX = 200, bY = 150, vX = 3, vY = 3, score = 0;
-
+                    let rG = 110, rD = 110, bX = 200, bY = 150, vX = 4, vY = 4;
                     function dessiner() {
-                        ctx.clearRect(0, 0, 400, 300);
-                        ctx.fillStyle = '#fff';
-                        ctx.fillRect(10, rG, 10, 80); // Raquette Gauche
-                        ctx.fillRect(380, rD, 10, 80); // Raquette Droite
-                        ctx.beginPath(); ctx.arc(bX, bY, 8, 0, Math.PI*2); ctx.fill(); // Balle
-                        
+                        ctx.clearRect(0, 0, 400, 300); ctx.fillStyle = '#fff';
+                        ctx.fillRect(10, rG, 10, 80); ctx.fillRect(380, rD, 10, 80);
+                        ctx.beginPath(); ctx.arc(bX, bY, 8, 0, Math.PI*2); ctx.fill();
                         bX += vX; bY += vY;
                         if(bY <= 0 || bY >= 300) vY = -vY;
-                        if(bX <= 20 && bY >= rG && bY <= rG+80) { vX = -vX; score++; }
+                        if(bX <= 20 && bY >= rG && bY <= rG+80) vX = -vX;
                         if(bX >= 370 && bY >= rD && bY <= rD+80) vX = -vX;
-                        if(bX < 0 || bX > 400) { bX = 200; bY = 150; vX = -vX; score = 0; }
-                        
-                        // IA simple pour la raquette droite
-                        if(rD + 40 < bY) rD += 2; else rD -= 2;
+                        if(bX < 0 || bX > 400) { bX = 200; bY = 150; vX = -vX; }
+                        if(rD + 40 < bY) rD += 3; else rD -= 3;
                         requestAnimationFrame(dessiner);
                     }
                     dessiner();
-
                     window.addEventListener('keydown', function(e) {
-                        if(e.key === 'z' || e.key === 'Z') rG = Math.max(0, rG - 20);
-                        if(e.key === 's' || e.key === 'S') rG = Math.min(220, rG + 20);
-                    });
-                `;
+                        if(e.key === 'z' || e.key === 'Z') rG = Math.max(0, rG - 25);
+                        if(e.key === 's' || e.key === 'S') rG = Math.min(220, rG + 25);
+                    });`;
             } else {
-                // Actions par défaut pour le commerce
-                scriptActions = `
-                    if(document.getElementById('bouton_valider')) {
-                        document.getElementById('bouton_valider').onclick = function() {
-                            alert("🧾 OPÉRATION EFFECTUÉE\\n\\nEnregistrement validé avec succès !");
-                        };
-                    }
-                `;
+                scriptActions = `if(document.getElementById('bouton_valider')) { document.getElementById('bouton_valider').onclick = function() { alert("🧾 Action effectuée avec succès !"); }; }`;
             }
-
-            const PageFinale = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Jeu BuKo Interactif</title>
-                <style>
-                    body { padding: 20px; font-family: sans-serif; background: #f5f6fa; text-align: center; }
-                    .buko-space-title { font-size: 1.5rem; font-weight: bold; border-bottom: 3px solid #ffcc00; padding-bottom: 5px; margin-bottom: 20px; color: #2c3e50; }
-                    .buko-text { font-size: 1.4rem; margin: 15px 0; color: #333; font-weight: bold; }
-                </style>
-            </head>
-            <body>
-                <div id="canvas">${HTML_Contenu}</div>
-                <script>
-                    window.onload = function() { ${scriptActions} };
-                <\/script>
-            </body>
-            </html>`;
-
+            const PageFinale = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Application BuKo</title><style>body { padding: 20px; font-family: sans-serif; background: #f5f6fa; text-align: center; }.buko-space-title { font-size: 1.5rem; font-weight: bold; border-bottom: 3px solid #ffcc00; padding-bottom: 5px; margin-bottom: 20px; color: #2c3e50; }.buko-text { font-size: 1.3rem; margin: 15px 0; color: #333; }</style></head><body><div id="canvas">${HTML_Contenu}</div><script>window.onload = function() { ${scriptActions} };<\/script></body></html>`;
             let blob = new Blob([PageFinale], { type: "text/html;charset=utf-8" });
-            let lien = document.createElement("a");
-            lien.href = URL.createObjectURL(blob);
-            lien.download = "mon_jeu_buko.html";
-            lien.click();
+            let lien = document.createElement("a"); lien.href = URL.createObjectURL(blob); lien.download = "mon_jeu_buko.html"; lien.click();
         }
         chargerBoiteOutils();
     </script>
