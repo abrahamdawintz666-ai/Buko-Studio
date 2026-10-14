@@ -12,20 +12,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Le robot s'installe sur le serveur Linux
     - name: Connexion au dépôt
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Configuration de Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-extension: '3.10'
+        python-version: '3.10'
 
-    # 2. Le robot crée le convertisseur BuKo vers Kivy pour Android
     - name: Injection du traducteur secret
       run: |
         cat << 'EOF' > main.py
-        # Ce script secret s'exécute sur le serveur pour convertir BuKo en vrai Kivy
         from kivy.app import App
         from kivy.uix.boxlayout import BoxLayout
         from kivy.uix.button import Button
@@ -35,14 +32,11 @@ jobs:
         class AppBuKo(App):
             def build(self):
                 layout = BoxLayout(orientation='vertical', padding=15, spacing=10)
-                
-                # Le code écrit sur le téléphone est analysé ici par le serveur
                 code_brut = """${{ github.event.inputs.code_buko }}"""
                 for ligne in code_brut.split('\n'):
                     l = ligne.strip()
                     if not l.endswith('.'): continue
                     l = l[:-1].strip()
-                    
                     if l.startswith('bouton') or l.startswith('button'):
                         layout.add_widget(Button(text="Mettre en vente", background_color=(0.18, 0.8, 0.44, 1)))
                     elif l.startswith('affichage_texte') or l.startswith('text_display'):
@@ -55,25 +49,23 @@ jobs:
             AppBuKo().run()
         EOF
 
-    # 3. Le robot installe Buildozer et les outils Android (SDK/NDK)
+    # Correction de l'erreur d'obsolescence demandée par GitHub
     - name: Installation des outils de compilation Android
       run: |
         sudo apt-get update
         sudo apt-get install -y git zip unzip openjdk-17-jdk fontconfig libsqlite3-dev libgdbm-dev libdb5.3-dev libpcap-dev liblzma-dev libffi-dev libssl-dev
         pip install --user --upgrade buildozer cython virtualenv
-        # Initialisation automatique du fichier de configuration Android
         ~/.local/bin/buildozer init
         sed -i 's/# requirements = kivy/requirements = kivy, python3/' buildozer.spec
 
-    # 4. Lancement de la fabrication lourde du fichier .apk
+    # Utilisation de la version v4 moderne exigée par GitHub
     - name: Fabrication du véritable fichier APK
       run: |
         export PATH=$PATH:~/.local/bin
         buildozer android debug
 
-    # 5. Le serveur vous met le fichier à disposition pour le télécharger
     - name: Sauvegarde du fichier d installation réel
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Application-BuKo-Installee
         path: bin/*.apk
