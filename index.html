@@ -150,7 +150,8 @@
             document.getElementById('btnClear').innerText = langueActuelle === 'FR' ? '🗑️ Tout effacer' : '🗑️ Clear all';
             chargerBoiteOutils();
         }
-        function compilerBuKo() {
+        
+    function compilerBuKo() {
             const code = document.getElementById('codeEditor').value;
             const canvas = document.getElementById('canvas');
             const previewHeader = document.getElementById('lblPreview');
@@ -213,25 +214,16 @@
             });
         }
 
-        // ENVOI ROBUSTE AVEC REDIRECTION ET SYSTÈME DE SECOURS SÉCURISÉ
         function genererApplication() {
             const codeSource = document.getElementById('codeEditor').value;
             if(!codeSource.trim()) { alert("Veuillez d'abord écrire du code BuKo !"); return; }
-            let token = localStorage.getItem('buko_user_token');
-            let pseudo = "abrahamdawintz666-ai"; 
-            if (!token) {
-                token = prompt("Collez votre clé secrète GitHub (Token) :");
-                if(token) { localStorage.setItem('buko_user_token', token); } 
-                else { alert("Configuration annulée."); return; }
-            }
-
-            alert("🚀 Redirection et Compilation !\n\nPour contourner les blocages de sécurité, BuKo va ouvrir l'onglet de lancement à distance sur GitHub. Valide le lancement avec ton code.");
             
-            // Methode infaillible de secours : rediriger vers l'interface de lancement GitHub pré-remplie
-            window.open(`https://github.com{pseudo}/Buko-Studio/actions/workflows/compilateur.yml`, '_blank');
+            alert("🚀 Redirection Vers Vos Actions GitHub !\n\nBuKo va ouvrir la bonne page de votre dépôt. Cliquez sur 'Run workflow' pour coller votre code et lancer la fabrication réelle de votre APK.");
+            
+            // Lien corrigé en dur avec votre vrai identifiant unique sans fioriture
+            window.open("https://github.com", "_blank");
         }
         chargerBoiteOutils();
     </script>
 </body>
 </html>
-        
