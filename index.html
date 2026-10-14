@@ -172,26 +172,59 @@
                 }
             });
         }
-        function genererApplication() {
+                function genererApplication() {
             const HTML_Contenu = document.getElementById('canvas').innerHTML;
-            if(!HTML_Contenu.trim()) { alert("Votre application est vide !"); return; }
+            const codeSource = document.getElementById('codeEditor').value;
+            if(!codeSource.trim()) { alert("Votre application est vide !"); return; }
             
-            // Script d action independant injecté dans l APK web finale
-            let scriptActions = `
-                if(document.getElementById('bouton_valider')) {
-                    document.getElementById('bouton_valider').onclick = function() {
-                        let art = document.getElementById('nom_produit') ? document.getElementById('nom_produit').value : '';
-                        let cl = document.getElementById('client_nom') ? document.getElementById('client_nom').value : '';
-                        alert("🧾 FACTURE COMMERCIALE BUKO :\\n\\nClient : " + cl + "\\nArticle enregistré : " + art + "\\n\\nStatut : Enregistré !");
-                        if(document.getElementById('statut_barre')) document.getElementById('statut_barre').innerText = "Statut : Facture générée !";
-                    };
-                }
-                if(document.getElementById('bouton_annuler')) {
-                    document.getElementById('bouton_annuler').onclick = function() {
-                        document.querySelectorAll('.buko-input').forEach(i => i.value = '');
-                        if(document.getElementById('statut_barre')) document.getElementById('statut_barre').innerText = "Statut : Effacé.";
-                    };
-                }`;
+            let scriptActions = "";
+
+            // Si le code contient le mot "PingPong" ou "jeu", on injecte le vrai moteur de jeu de Ping-Pong
+            if (codeSource.includes('PingPong') || codeSource.includes('jeu')) {
+                scriptActions = `
+                    let canvasJeu = document.createElement('canvas');
+                    canvasJeu.id = 'gameCanvas';
+                    canvasJeu.width = 400; canvasJeu.height = 300;
+                    canvasJeu.style.background = '#000'; canvasJeu.style.display = 'block'; canvasJeu.style.margin = '20px auto';
+                    document.getElementById('canvas').appendChild(canvasJeu);
+                    
+                    let ctx = canvasJeu.getContext('2d');
+                    let rG = 110, rD = 110, bX = 200, bY = 150, vX = 3, vY = 3, score = 0;
+
+                    function dessiner() {
+                        ctx.clearRect(0, 0, 400, 300);
+                        ctx.fillStyle = '#fff';
+                        ctx.fillRect(10, rG, 10, 80); // Raquette Gauche
+                        ctx.fillRect(380, rD, 10, 80); // Raquette Droite
+                        ctx.beginPath(); ctx.arc(bX, bY, 8, 0, Math.PI*2); ctx.fill(); // Balle
+                        
+                        bX += vX; bY += vY;
+                        if(bY <= 0 || bY >= 300) vY = -vY;
+                        if(bX <= 20 && bY >= rG && bY <= rG+80) { vX = -vX; score++; }
+                        if(bX >= 370 && bY >= rD && bY <= rD+80) vX = -vX;
+                        if(bX < 0 || bX > 400) { bX = 200; bY = 150; vX = -vX; score = 0; }
+                        
+                        // IA simple pour la raquette droite
+                        if(rD + 40 < bY) rD += 2; else rD -= 2;
+                        requestAnimationFrame(dessiner);
+                    }
+                    dessiner();
+
+                    window.addEventListener('keydown', function(e) {
+                        if(e.key === 'z' || e.key === 'Z') rG = Math.max(0, rG - 20);
+                        if(e.key === 's' || e.key === 'S') rG = Math.min(220, rG + 20);
+                    });
+                `;
+            } else {
+                // Actions par défaut pour le commerce
+                scriptActions = `
+                    if(document.getElementById('bouton_valider')) {
+                        document.getElementById('bouton_valider').onclick = function() {
+                            alert("🧾 OPÉRATION EFFECTUÉE\\n\\nEnregistrement validé avec succès !");
+                        };
+                    }
+                `;
+            }
 
             const PageFinale = `
             <!DOCTYPE html>
@@ -199,22 +232,17 @@
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Application BuKo</title>
+                <title>Jeu BuKo Interactif</title>
                 <style>
-                    body { padding: 20px; font-family: sans-serif; background: #f5f6fa; }
+                    body { padding: 20px; font-family: sans-serif; background: #f5f6fa; text-align: center; }
                     .buko-space-title { font-size: 1.5rem; font-weight: bold; border-bottom: 3px solid #ffcc00; padding-bottom: 5px; margin-bottom: 20px; color: #2c3e50; }
-                    .buko-btn { padding: 15px; border: none; border-radius: 5px; font-weight: bold; margin: 10px 0; display: block; width: 100%; color: white; font-size: 1.1rem; cursor: pointer; }
-                    .buko-btn.Vert { background: #2ecc71; }
-                    .buko-btn.Bleu { background: #3498db; }
-                    .buko-btn.Standard { background: #bdc3c7; color: black; }
-                    .buko-text { font-size: 1.2rem; margin: 15px 0; color: #333; font-weight: 500; }
-                    .buko-input { display: block; width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #bdc3c7; border-radius: 5px; font-size: 1rem; background: #fff; }
+                    .buko-text { font-size: 1.4rem; margin: 15px 0; color: #333; font-weight: bold; }
                 </style>
             </head>
             <body>
-                \${HTML_Contenu}
+                <div id="canvas">${HTML_Contenu}</div>
                 <script>
-                    window.onload = function() { \${scriptActions} };
+                    window.onload = function() { ${scriptActions} };
                 <\/script>
             </body>
             </html>`;
@@ -222,7 +250,7 @@
             let blob = new Blob([PageFinale], { type: "text/html;charset=utf-8" });
             let lien = document.createElement("a");
             lien.href = URL.createObjectURL(blob);
-            lien.download = "ma_creation_buko.html";
+            lien.download = "mon_jeu_buko.html";
             lien.click();
         }
         chargerBoiteOutils();
