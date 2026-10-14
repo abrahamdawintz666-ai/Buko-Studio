@@ -60,80 +60,47 @@
             <textarea id="codeEditor" placeholder="Écrivez votre logique ici..." oninput="compilerBuKo()"></textarea>
         </div>
         <div class="preview-zone" id="previewZone">
-            <div class="preview-header" id="lblPreview">APERCU DE L'INTERFACE (MOTEUR SYNTAXIQUE : WEB)</div>
+            <div class="preview-header" id="lblPreview">APERCU DE L'INTERFACE</div>
             <div id="canvas"></div>
         </div>
     </div>
     <div class="generate-bar">
-        <button class="gen-btn" id="btnGen" onclick="genererApplication()">Générer mon Application</button>
+        <button class="gen-btn" id="btnGen" onclick="genererApplication()">Générer mon Application Autonome</button>
     </div>
     <script>
         let langueActuelle = 'FR';
-        let cibleSysteme = 'web'; 
         const outils = {
             'FR': [
-                { nom: '🖥️ Environnement : Bureau (Tkinter)', code: 'appli: bureau .' },
-                { nom: '📱 Environnement : Mobile (Kivy)', code: 'appli: mobile .' },
-                { nom: '🌐 Environnement : Site (Flask)', code: 'appli: web .' },
-                { nom: '🗂️ Section : Dashboard', code: '[Espace Dashboard]' },
+                { nom: '🗂️ Section : Créer Espace Visuel', code: '[Mon Application]' },
                 { nom: '📱 Graphique : Créer Bouton Vert', code: 'bouton bouton_principal [texte: "Valider", couleur: Vert] .' },
                 { nom: '📱 Graphique : Créer Bouton Bleu', code: 'bouton bouton_secondaire [texte: "Retour", couleur: Bleu] .' },
                 { nom: '📝 Graphique : Afficher Texte', code: 'affichage_texte statut [contenu: "Bienvenue"] .' },
-                { nom: '📥 Graphique : Zone de Saisie', code: 'zone_saisie champ_texte [indication: "Entrez votre texte"] .' },
-                { nom: '🔢 Formulaire : Demander Chiffre', code: 'demander_chiffre prix [question: "Quel montant ?"] .' },
-                { nom: '🔄 Logique : Boucle Lot', code: 'groupe [bouton_1, bouton_2] *5 -> couleur: Bleu .' },
-                { nom: '🤔 Condition : Si', code: 'si note >= 16 ->\n    afficher "Très Bien !" .\n.' },
-                { nom: '🤔 Condition : Sinon', code: 'sinon ->\n    afficher "Échec" .\n.' },
-                { nom: '⚡ Événement : Au Clic', code: 'quand bouton_principal fait cliquer ->\n    \n.' },
-                { nom: '🔒 Sécurité : Anti-Pirates', code: 'securite: "admin1234" .' },
-                { nom: '📧 Réseau : Envoyer Email', code: 'envoyer_email:\n    a: "boss@email.com"\n    titre: "Alerte"\n    message: "Connexion"\n.' },
-                { nom: '💬 Réseau : Envoyer SMS', code: 'envoyer_sms:\n    a: "+33611223344"\n    texte: "Alerte BuKo"\n.' },
-                { nom: '🤖 IA : Chatbot Assistant', code: 'ia -> repondre_a: "Bonjour" .' },
-                { nom: '🤖 IA : Vision Caméra', code: 'ia -> analyser_image: photo .' },
-                { nom: '🚗 Course : Contact Clé', code: 'mettre_le_contact voiture .' },
-                { nom: '🚗 Course : Accélérer', code: 'accelerer voiture .' },
-                { nom: '🚗 Course : Freiner', code: 'freiner voiture .' },
-                { nom: '💰 Devises : Convertir l\'argent', code: 'prix_total [valeur: 100 dollars en euros] .' }
+                { nom: '📥 Graphique : Zone de Saisie', code: 'zone_saisie champ_texte [indication: "Entrez votre texte"] .' }
             ],
             'EN': [
-                { nom: '🖥️ Environment : Desktop (Tkinter)', code: 'appli: bureau .' },
-                { nom: '📱 Environment : Mobile (Kivy)', code: 'appli: mobile .' },
-                { nom: '🌐 Environment : Site (Flask)', code: 'appli: web .' },
-                { nom: '🗂️ Section: Dashboard', code: '[Espace Dashboard]' },
+                { nom: '🗂️ Section: Create Visual Space', code: '[My Application]' },
                 { nom: '📱 Graphic: Green Button', code: 'button main_button [text: "Submit", color: Green] .' },
                 { nom: '📱 Graphic: Blue Button', code: 'button cancel_button [text: "Back", color: Blue] .' },
                 { nom: '📝 Graphic: Text Display', code: 'text_display status [content: "Welcome"] .' },
-                { nom: '📥 Graphic: Input Field', code: 'input_field text_box [indication: "Enter text"] .' },
-                { nom: '🔢 Form: Ask Number', code: 'demander_chiffre price [question: "What price ?"] .' },
-                { nom: '🔄 Logic: Repeat Group', code: 'groupe [button_1, button_2] *5 -> color: Blue .' },
-                { nom: '🤔 Condition: If', code: 'si note >= 16 ->\n    afficher "Great !" .\n.' },
-                { nom: '🤔 Condition: Else', code: 'sinon ->\n    failed\n.' },
-                { nom: '⚡ Event: On Click', code: 'when main_button does click ->\n    \n.' },
-                { nom: '🔒 Security: Anti-Hacker Lock', code: 'security: "admin1234" .' },
-                { nom: '📧 Network: Send Email', code: 'envoyer_email:\n    a: "boss@email.com"\n    titre: "Alert"\n    message: "Login"\n.' },
-                { nom: '💬 Network: Send SMS', code: 'envoyer_sms:\n    a: "+33611223344"\n    texte: "BuKo Alert"\n.' },
-                { nom: '🤖 AI: Chatbot', code: 'ia -> repondre_a: "Hello" .' },
-                { nom: '🤖 AI: Vision', code: 'ia -> analyser_image: photo .' },
-                { nom: '🚗 Racing: Start Engine', code: 'mettre_le_contact car .' },
-                { nom: '🚗 Racing: Accelerate', code: 'accelerer car .' },
-                { nom: '🚗 Racing: Brake', code: 'freiner car .' },
-                { nom: '💰 Currency: Money Convert', code: 'prix_total [valeur: 100 dollars en euros] .' }
+                { nom: '📥 Graphic: Input Field', code: 'input_field text_box [indication: "Enter text"] .' }
             ]
         };
+
         function toggleMenu() { document.getElementById('dropdownMenu').classList.toggle('show'); }
         function effacerTout() {
-            if(confirm(langueActuelle === 'FR' ? "Voulez-vous vraiment tout effacer ?" : "Do you really want to clear everything ?")) {
+            if(confirm("Voulez-vous vraiment tout effacer ?")) {
                 document.getElementById('codeEditor').value = '';
                 compilerBuKo();
             }
         }
+        
         function chargerBoiteOutils() {
             const menu = document.getElementById('dropdownMenu');
             menu.innerHTML = '';
             outils[langueActuelle].forEach(outil => {
                 let btn = document.createElement('button');
                 btn.className = 'tool-btn';
-                btn.innerText = outil.nom;
+                btn.innerText = tool_clean_name(outil.nom);
                 btn.onclick = () => {
                     const editor = document.getElementById('codeEditor');
                     editor.value += (editor.value.endsWith('\n') || editor.value === '' ? '' : '\n') + outil.code + '\n';
@@ -143,18 +110,18 @@
                 menu.appendChild(btn);
             });
         }
+        
+        function tool_clean_name(name) { return name; }
+
         function toggleLangue() {
             langueActuelle = (langueActuelle === 'FR') ? 'EN' : 'FR';
             document.getElementById('langBtn').innerText = '🌐 ' + langueActuelle;
-            document.getElementById('lblMenu').innerText = langueActuelle === 'FR' ? 'Boîte à Mots-Clés Complet (Aide Débutant)' : 'Keyword Toolbox (Beginner Help)';
-            document.getElementById('btnClear').innerText = langueActuelle === 'FR' ? '🗑️ Tout effacer' : '🗑️ Clear all';
             chargerBoiteOutils();
         }
-        
-    function compilerBuKo() {
+
+        function compilerBuKo() {
             const code = document.getElementById('codeEditor').value;
             const canvas = document.getElementById('canvas');
-            const previewHeader = document.getElementById('lblPreview');
             canvas.innerHTML = ''; 
             const lignes = code.split('\n');
             lignes.forEach(ligne => {
@@ -168,17 +135,6 @@
                 }
                 if (!l.endsWith('.')) return;
                 l = l.slice(0, -1).trim(); 
-                if (l.startsWith('appli:')) {
-                    let parts = l.split(':');
-                    if(parts.length > 1) {
-                        let type = parts[1].trim();
-                        cibleSysteme = type;
-                        if(type === 'bureau') previewHeader.innerText = "APERCU DE L'INTERFACE (MOTEUR SYNTAXIQUE : TKINTER)";
-                        else if(type === 'mobile') previewHeader.innerText = "APERCU DE L'INTERFACE (MOTEUR SYNTAXIQUE : KIVY)";
-                        else previewHeader.innerText = "APERCU DE L'INTERFACE (MOTEUR SYNTAXIQUE : WEB)";
-                    }
-                    return;
-                }
                 
                 let t_txt = 'Bouton'; let t_cont = 'Texte'; let t_ind = 'Saisie...'; let t_col = 'Standard';
                 let matchOptions = l.match(/\[(.*)\]/);
@@ -205,7 +161,7 @@
                     txt.className = 'buko-text';
                     txt.innerText = t_cont;
                     canvas.appendChild(txt);
-                } else if (l.startsWith('zone_saisie') || l.startsWith('input_field') || l.startsWith('demander_')) {
+                } else if (l.startsWith('zone_saisie') || l.startsWith('input_field')) {
                     let inp = document.createElement('input');
                     inp.className = 'buko-input';
                     inp.placeholder = t_ind;
@@ -214,14 +170,42 @@
             });
         }
 
+        // EXPORTATION COMPLÈTE ET DIRECTE EN 1 CLIC (SANS SERVEUR)
         function genererApplication() {
-            const codeSource = document.getElementById('codeEditor').value;
-            if(!codeSource.trim()) { alert("Veuillez d'abord écrire du code BuKo !"); return; }
-            
-            alert("🚀 Redirection Vers Vos Actions GitHub !\n\nBuKo va ouvrir la bonne page de votre dépôt. Cliquez sur 'Run workflow' pour coller votre code et lancer la fabrication réelle de votre APK.");
-            
-            // Lien corrigé en dur avec votre vrai identifiant unique sans fioriture
-            window.open("https://github.com", "_blank");
+            const HTML_Contenu = document.getElementById('canvas').innerHTML;
+            if(!HTML_Contenu.trim()) { alert("Votre application est vide ! Écrivez du code d'abord."); return; }
+
+            // Fabrication de la page web autonome de votre client
+            const PageFinale = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Mon Application BuKo</title>
+                <style>
+                    body { padding: 20px; font-family: sans-serif; background: #f5f6fa; }
+                    .buko-space-title { font-size: 1.5rem; font-weight: bold; border-bottom: 3px solid #ffcc00; padding-bottom: 5px; margin-bottom: 20px; }
+                    .buko-btn { padding: 15px; border: none; border-radius: 5px; font-weight: bold; margin: 10px 0; display: block; width: 100%; color: white; font-size: 1.1rem; }
+                    .buko-btn.Vert { background: #2ecc71; }
+                    .buko-btn.Bleu { background: #3498db; }
+                    .buko-btn.Standard { background: #bdc3c7; color: black; }
+                    .buko-text { font-size: 1.2rem; margin: 15px 0; color: #333; }
+                    .buko-input { display: block; width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #bdc3c7; border-radius: 5px; font-size: 1rem; }
+                </style>
+            </head>
+            <body>
+                ${HTML_Contenu}
+            </body>
+            </html>`;
+
+            // Déclenchement instantané du téléchargement du vrai fichier
+            let blob = new Blob([PageFinale], { type: "text/html;charset=utf-8" });
+            let lien = document.createElement("a");
+            lien.href = URL.createObjectURL(blob);
+            lien.download = "ma_creation_buko.html";
+            lien.click();
+            alert("🎉 Félicitations ! Votre application autonome a été générée et téléchargée sur votre téléphone sous le nom 'ma_creation_buko.html' ! Vous pouvez la lancer ou l'envoyer sur Termux.");
         }
         chargerBoiteOutils();
     </script>
