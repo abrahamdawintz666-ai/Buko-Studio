@@ -67,40 +67,39 @@
     <div class="generate-bar">
         <button class="gen-btn" id="btnGen" onclick="genererApplication()">Générer mon Application Autonome</button>
     </div>
-    <script>
+        <script>
         let langueActuelle = 'FR';
+        let cibleSysteme = 'web'; 
         const outils = {
             'FR': [
-                { nom: '🗂️ Section : Créer Espace Visuel', code: '[Mon Application]' },
-                { nom: '📱 Graphique : Créer Bouton Vert', code: 'bouton bouton_principal [texte: "Valider", couleur: Vert] .' },
-                { nom: '📱 Graphique : Créer Bouton Bleu', code: 'bouton bouton_secondaire [texte: "Retour", couleur: Bleu] .' },
-                { nom: '📝 Graphique : Afficher Texte', code: 'affichage_texte statut [contenu: "Bienvenue"] .' },
-                { nom: '📥 Graphique : Zone de Saisie', code: 'zone_saisie champ_texte [indication: "Entrez votre texte"] .' }
+                { nom: '🗂️ Section : Dashboard', code: '[Espace Dashboard]' },
+                { nom: '📱 Graphique : Bouton Vert', code: 'bouton bouton_valider [texte: "Encaisser", couleur: Vert] .' },
+                { nom: '📱 Graphique : Bouton Bleu', code: 'bouton bouton_annuler [texte: "Effacer", couleur: Bleu] .' },
+                { nom: '📝 Graphique : Afficher Texte', code: 'affichage_texte statut_barre [contenu: "Système prêt."] .' },
+                { nom: '📥 Graphique : Zone Saisie', code: 'zone_saisie nom_produit [indication: "Nom de l\'article"] .' }
             ],
             'EN': [
-                { nom: '🗂️ Section: Create Visual Space', code: '[My Application]' },
-                { nom: '📱 Graphic: Green Button', code: 'button main_button [text: "Submit", color: Green] .' },
-                { nom: '📱 Graphic: Blue Button', code: 'button cancel_button [text: "Back", color: Blue] .' },
-                { nom: '📝 Graphic: Text Display', code: 'text_display status [content: "Welcome"] .' },
-                { nom: '📥 Graphic: Input Field', code: 'input_field text_box [indication: "Enter text"] .' }
+                { nom: '🗂️ Section: Dashboard', code: '[Espace Dashboard]' },
+                { nom: '📱 Graphic: Green Button', code: 'button bouton_valider [text: "Submit", color: Green] .' },
+                { nom: '📱 Graphic: Blue Button', code: 'button bouton_annuler [text: "Clear", color: Blue] .' },
+                { nom: '📝 Graphic: Text Display', code: 'text_display statut_barre [content: "Ready."] .' },
+                { nom: '📥 Graphic: Input Field', code: 'input_field nom_produit [indication: "Item name"] .' }
             ]
         };
-
         function toggleMenu() { document.getElementById('dropdownMenu').classList.toggle('show'); }
         function effacerTout() {
-            if(confirm("Voulez-vous vraiment tout effacer ?")) {
+            if(confirm("Tout effacer ?")) {
                 document.getElementById('codeEditor').value = '';
                 compilerBuKo();
             }
         }
-        
         function chargerBoiteOutils() {
             const menu = document.getElementById('dropdownMenu');
             menu.innerHTML = '';
             outils[langueActuelle].forEach(outil => {
                 let btn = document.createElement('button');
                 btn.className = 'tool-btn';
-                btn.innerText = tool_clean_name(outil.nom);
+                btn.innerText = outil.nom;
                 btn.onclick = () => {
                     const editor = document.getElementById('codeEditor');
                     editor.value += (editor.value.endsWith('\n') || editor.value === '' ? '' : '\n') + outil.code + '\n';
@@ -110,18 +109,15 @@
                 menu.appendChild(btn);
             });
         }
-        
-        function tool_clean_name(name) { return name; }
-
         function toggleLangue() {
             langueActuelle = (langueActuelle === 'FR') ? 'EN' : 'FR';
             document.getElementById('langBtn').innerText = '🌐 ' + langueActuelle;
             chargerBoiteOutils();
         }
-
         function compilerBuKo() {
             const code = document.getElementById('codeEditor').value;
             const canvas = document.getElementById('canvas');
+            const previewHeader = document.getElementById('lblPreview');
             canvas.innerHTML = ''; 
             const lignes = code.split('\n');
             lignes.forEach(ligne => {
@@ -135,7 +131,17 @@
                 }
                 if (!l.endsWith('.')) return;
                 l = l.slice(0, -1).trim(); 
-                
+                if (l.startsWith('appli:')) {
+                    let parts = l.split(':');
+                    if(parts.length > 1) {
+                        let type = parts[1].trim();
+                        cibleSysteme = type;
+                        if(type === 'bureau') previewHeader.innerText = "INTERFACE : TKINTER";
+                        else if(type === 'mobile') previewHeader.innerText = "INTERFACE : KIVY";
+                        else previewHeader.innerText = "INTERFACE : WEB";
+                    }
+                    return;
+                }
                 let t_txt = 'Bouton'; let t_cont = 'Texte'; let t_ind = 'Saisie...'; let t_col = 'Standard';
                 let matchOptions = l.match(/\[(.*)\]/);
                 if (matchOptions && matchOptions[1]) {
@@ -150,62 +156,74 @@
                         }
                     });
                 }
-
+                let nomTech = l.split(/\s+/)[1] || 'elem';
                 if (l.startsWith('bouton') || l.startsWith('button')) {
                     let btn = document.createElement('button');
-                    btn.className = `buko-btn ${t_col}`;
-                    btn.innerText = t_txt;
+                    btn.className = `buko-btn ${t_col}`; btn.id = nomTech; btn.innerText = t_txt;
                     canvas.appendChild(btn);
                 } else if (l.startsWith('affichage_texte') || l.startsWith('text_display')) {
                     let txt = document.createElement('div');
-                    txt.className = 'buko-text';
-                    txt.innerText = t_cont;
+                    txt.className = 'buko-text'; txt.id = nomTech; txt.innerText = t_cont;
                     canvas.appendChild(txt);
-                } else if (l.startsWith('zone_saisie') || l.startsWith('input_field')) {
+                } else if (l.startsWith('zone_saisie') || l.startsWith('input_field') || l.startsWith('demander_')) {
                     let inp = document.createElement('input');
-                    inp.className = 'buko-input';
-                    inp.placeholder = t_ind;
+                    inp.className = 'buko-input'; inp.id = nomTech; inp.placeholder = t_ind;
                     canvas.appendChild(inp);
                 }
             });
         }
-
-        // EXPORTATION COMPLÈTE ET DIRECTE EN 1 CLIC (SANS SERVEUR)
         function genererApplication() {
             const HTML_Contenu = document.getElementById('canvas').innerHTML;
-            if(!HTML_Contenu.trim()) { alert("Votre application est vide ! Écrivez du code d'abord."); return; }
+            if(!HTML_Contenu.trim()) { alert("Votre application est vide !"); return; }
+            
+            // Script d action independant injecté dans l APK web finale
+            let scriptActions = `
+                if(document.getElementById('bouton_valider')) {
+                    document.getElementById('bouton_valider').onclick = function() {
+                        let art = document.getElementById('nom_produit') ? document.getElementById('nom_produit').value : '';
+                        let cl = document.getElementById('client_nom') ? document.getElementById('client_nom').value : '';
+                        alert("🧾 FACTURE COMMERCIALE BUKO :\\n\\nClient : " + cl + "\\nArticle enregistré : " + art + "\\n\\nStatut : Enregistré !");
+                        if(document.getElementById('statut_barre')) document.getElementById('statut_barre').innerText = "Statut : Facture générée !";
+                    };
+                }
+                if(document.getElementById('bouton_annuler')) {
+                    document.getElementById('bouton_annuler').onclick = function() {
+                        document.querySelectorAll('.buko-input').forEach(i => i.value = '');
+                        if(document.getElementById('statut_barre')) document.getElementById('statut_barre').innerText = "Statut : Effacé.";
+                    };
+                }`;
 
-            // Fabrication de la page web autonome de votre client
             const PageFinale = `
             <!DOCTYPE html>
             <html>
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Mon Application BuKo</title>
+                <title>Application BuKo</title>
                 <style>
                     body { padding: 20px; font-family: sans-serif; background: #f5f6fa; }
-                    .buko-space-title { font-size: 1.5rem; font-weight: bold; border-bottom: 3px solid #ffcc00; padding-bottom: 5px; margin-bottom: 20px; }
-                    .buko-btn { padding: 15px; border: none; border-radius: 5px; font-weight: bold; margin: 10px 0; display: block; width: 100%; color: white; font-size: 1.1rem; }
+                    .buko-space-title { font-size: 1.5rem; font-weight: bold; border-bottom: 3px solid #ffcc00; padding-bottom: 5px; margin-bottom: 20px; color: #2c3e50; }
+                    .buko-btn { padding: 15px; border: none; border-radius: 5px; font-weight: bold; margin: 10px 0; display: block; width: 100%; color: white; font-size: 1.1rem; cursor: pointer; }
                     .buko-btn.Vert { background: #2ecc71; }
                     .buko-btn.Bleu { background: #3498db; }
                     .buko-btn.Standard { background: #bdc3c7; color: black; }
-                    .buko-text { font-size: 1.2rem; margin: 15px 0; color: #333; }
-                    .buko-input { display: block; width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #bdc3c7; border-radius: 5px; font-size: 1rem; }
+                    .buko-text { font-size: 1.2rem; margin: 15px 0; color: #333; font-weight: 500; }
+                    .buko-input { display: block; width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #bdc3c7; border-radius: 5px; font-size: 1rem; background: #fff; }
                 </style>
             </head>
             <body>
-                ${HTML_Contenu}
+                \${HTML_Contenu}
+                <script>
+                    window.onload = function() { \${scriptActions} };
+                <\/script>
             </body>
             </html>`;
 
-            // Déclenchement instantané du téléchargement du vrai fichier
             let blob = new Blob([PageFinale], { type: "text/html;charset=utf-8" });
             let lien = document.createElement("a");
             lien.href = URL.createObjectURL(blob);
             lien.download = "ma_creation_buko.html";
             lien.click();
-            alert("🎉 Félicitations ! Votre application autonome a été générée et téléchargée sur votre téléphone sous le nom 'ma_creation_buko.html' ! Vous pouvez la lancer ou l'envoyer sur Termux.");
         }
         chargerBoiteOutils();
     </script>
