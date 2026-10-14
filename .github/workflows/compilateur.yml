@@ -49,26 +49,22 @@ jobs:
             AppBuKo().run()
         EOF
 
-    # Correction de l'erreur d'obsolescence demandée par GitHub
     - name: Installation des outils de compilation Android
       run: |
         sudo apt-get update
         sudo apt-get install -y git zip unzip openjdk-17-jdk fontconfig libsqlite3-dev libgdbm-dev libdb5.3-dev libpcap-dev liblzma-dev libffi-dev libssl-dev
         pip install --user --upgrade buildozer cython virtualenv
-        
-        # Ligne magique : On accepte automatiquement toutes les licences Android SDK de Google
-        mkdir -p ~/.android
-        touch ~/.android/repositories.cfg
-        yes | sdkmanager --licenses || true
-        
         ~/.local/bin/buildozer init
+        
+        # Modification automatique du fichier de configuration Android
         sed -i 's/# requirements = kivy/requirements = kivy, python3/' buildozer.spec
+        sed -i 's/# android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
 
-    # Utilisation de la version v4 moderne exigée par GitHub
     - name: Fabrication du véritable fichier APK
       run: |
         export PATH=$PATH:~/.local/bin
-        buildozer android debug
+        # La commande 'yes |' injecte automatiquement la reponse "oui" si le SDK pose une question de licence
+        yes | buildozer android debug
 
     - name: Sauvegarde du fichier d installation réel
       uses: actions/upload-artifact@v4
