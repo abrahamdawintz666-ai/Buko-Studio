@@ -30,6 +30,7 @@
         .buko-btn { padding: 12px 24px; border: none; border-radius: 5px; font-weight: bold; margin: 10px 0; display: block; width: 100%; max-width: 250px; text-align: center; }
         .buko-btn.Vert { background: #2ecc71; color: white; }
         .buko-btn.Bleu { background: #3498db; color: white; }
+        .buko-btn.Standard { background: #bdc3c7; color: black; }
         .buko-text { font-size: 1.1rem; margin: 8px 0; color: #333; }
         .buko-input { display: block; width: 100%; max-width: 300px; padding: 10px; margin: 8px 0; border: 2px solid #bdc3c7; border-radius: 5px; font-size: 1rem; }
         .generate-bar { background: #111; padding: 10px; text-align: center; }
@@ -66,7 +67,7 @@
     <div class="generate-bar">
         <button class="gen-btn" id="btnGen" onclick="genererApplication()">Générer mon Application</button>
     </div>
-  <script>
+   <script>
         let langueActuelle = 'FR';
         let cibleSysteme = 'web'; 
         const outils = {
@@ -74,19 +75,49 @@
                 { nom: '🖥️ Environnement : Bureau (Tkinter)', code: 'appli: bureau .' },
                 { nom: '📱 Environnement : Mobile (Kivy)', code: 'appli: mobile .' },
                 { nom: '🌐 Environnement : Site (Flask)', code: 'appli: web .' },
-                { nom: '🗂️ Ouvrir l\'Espace Ventes', code: '[Espace Ventes]' },
-                { nom: '📱 Créer un Bouton Vert', code: 'bouton bouton_principal [texte: "Mettre en vente", couleur: Vert] .' },
-                { nom: '📝 Afficher un Texte', code: 'affichage_texte statut [contenu: "En attente..."] .' },
-                { nom: '📥 Zone de Saisie', code: 'zone_saisie prix_champ [indication: "Entrez le prix"] .' }
+                { nom: '🗂️ Section : Dashboard', code: '[Espace Dashboard]' },
+                { nom: '📱 Graphique : Créer Bouton Vert', code: 'bouton bouton_principal [texte: "Valider", couleur: Vert] .' },
+                { nom: '📱 Graphique : Créer Bouton Bleu', code: 'bouton bouton_secondaire [texte: "Retour", couleur: Bleu] .' },
+                { nom: '📝 Graphique : Afficher Texte', code: 'affichage_texte statut [contenu: "Bienvenue"] .' },
+                { nom: '📥 Graphique : Zone de Saisie', code: 'zone_saisie champ_texte [indication: "Entrez votre texte"] .' },
+                { nom: '🔢 Formulaire : Demander Chiffre', code: 'demander_chiffre prix [question: "Quel montant ?"] .' },
+                { nom: '🔄 Logique : Boucle Lot', code: 'groupe [bouton_1, bouton_2] *5 -> couleur: Bleu .' },
+                { nom: '🤔 Condition : Si', code: 'si note >= 16 ->\n    afficher "Très Bien !" .\n.' },
+                { nom: '🤔 Condition : Sinon', code: 'sinon ->\n    afficher "Échec" .\n.' },
+                { nom: '⚡ Événement : Au Clic', code: 'quand bouton_principal fait cliquer ->\n    \n.' },
+                { nom: '🔒 Sécurité : Anti-Pirates', code: 'securite: "admin1234" .' },
+                { nom: '📧 Réseau : Envoyer Email', code: 'envoyer_email:\n    a: "boss@email.com"\n    titre: "Alerte"\n    message: "Connexion"\n.' },
+                { nom: '💬 Réseau : Envoyer SMS', code: 'envoyer_sms:\n    a: "+33611223344"\n    texte: "Alerte BuKo"\n.' },
+                { nom: '🤖 IA : Chatbot Assistant', code: 'ia -> repondre_a: "Bonjour" .' },
+                { nom: '🤖 IA : Vision Caméra', code: 'ia -> analyser_image: photo .' },
+                { nom: '🚗 Course : Contact Clé', code: 'mettre_le_contact voiture .' },
+                { nom: '🚗 Course : Accélérer', code: 'accelerer voiture .' },
+                { nom: '🚗 Course : Freiner', code: 'freiner voiture .' },
+                { nom: '💰 Devises : Convertir l\'argent', code: 'prix_total [valeur: 100 dollars en euros] .' }
             ],
             'EN': [
                 { nom: '🖥️ Environment : Desktop (Tkinter)', code: 'appli: bureau .' },
                 { nom: '📱 Environment : Mobile (Kivy)', code: 'appli: mobile .' },
                 { nom: '🌐 Environment : Site (Flask)', code: 'appli: web .' },
-                { nom: '🗂️ Open Sales Space', code: '[Sales Space]' },
-                { nom: '📱 Create Green Button', code: 'button main_button [text: "Publish Sale", color: Green] .' },
-                { nom: '📝 Display Text', code: 'text_display status [content: "Awaiting..."] .' },
-                { nom: '📥 Input Field', code: 'input_field price_input [indication: "Enter price"] .' }
+                { nom: '🗂️ Section: Dashboard', code: '[Espace Dashboard]' },
+                { nom: '📱 Graphic: Green Button', code: 'button main_button [text: "Submit", color: Green] .' },
+                { nom: '📱 Graphic: Blue Button', code: 'button cancel_button [text: "Back", color: Blue] .' },
+                { nom: '📝 Graphic: Text Display', code: 'text_display status [content: "Welcome"] .' },
+                { nom: '📥 Graphic: Input Field', code: 'input_field text_box [indication: "Enter text"] .' },
+                { nom: '🔢 Form: Ask Number', code: 'demander_chiffre price [question: "What price ?"] .' },
+                { nom: '🔄 Logic: Repeat Group', code: 'groupe [button_1, button_2] *5 -> color: Blue .' },
+                { nom: '🤔 Condition: If', code: 'si note >= 16 ->\n    afficher "Great !" .\n.' },
+                { nom: '🤔 Condition: Else', code: 'sinon ->\n    failed\n.' },
+                { nom: '⚡ Event: On Click', code: 'when main_button does click ->\n    \n.' },
+                { nom: '🔒 Security: Anti-Hacker Lock', code: 'security: "admin1234" .' },
+                { nom: '📧 Network: Send Email', code: 'envoyer_email:\n    a: "boss@email.com"\n    titre: "Alert"\n    message: "Login"\n.' },
+                { nom: '💬 Network: Send SMS', code: 'envoyer_sms:\n    a: "+33611223344"\n    texte: "BuKo Alert"\n.' },
+                { nom: '🤖 AI: Chatbot', code: 'ia -> repondre_a: "Hello" .' },
+                { nom: '🤖 AI: Vision', code: 'ia -> analyser_image: photo .' },
+                { nom: '🚗 Racing: Start Engine', code: 'mettre_le_contact car .' },
+                { nom: '🚗 Racing: Accelerate', code: 'accelerer car .' },
+                { nom: '🚗 Racing: Brake', code: 'freiner car .' },
+                { nom: '💰 Currency: Money Convert', code: 'prix_total [valeur: 100 dollars en euros] .' }
             ]
         };
         function toggleMenu() { document.getElementById('dropdownMenu').classList.toggle('show'); }
@@ -117,9 +148,8 @@
             document.getElementById('langBtn').innerText = '🌐 ' + langueActuelle;
             document.getElementById('lblMenu').innerText = langueActuelle === 'FR' ? 'Boîte à Mots-Clés Complet (Aide Débutant)' : 'Keyword Toolbox (Beginner Help)';
             document.getElementById('btnClear').innerText = langueActuelle === 'FR' ? '🗑️ Tout effacer' : '🗑️ Clear all';
-            chargerBoiteOutils();
-        }
-        function compilerBuKo() {
+            chargerBoiteOutils(); }
+      function compilerBuKo() {
             const code = document.getElementById('codeEditor').value;
             const canvas = document.getElementById('canvas');
             const previewHeader = document.getElementById('lblPreview');
@@ -147,20 +177,36 @@
                     }
                     return;
                 }
+                
+                let t_txt = 'Bouton'; let t_cont = 'Texte'; let t_ind = 'Saisie...'; let t_col = 'Standard';
+                let matchOptions = l.match(/\[(.*)\]/);
+                if (matchOptions && matchOptions[1]) {
+                    matchOptions[1].split(',').forEach(part => {
+                        if (part.includes(':')) {
+                            let [k, v] = part.split(':');
+                            let cleanK = k.trim(); let cleanV = v.trim().replace(/"/g, '');
+                            if(cleanK === 'texte' || cleanK === 'text') t_txt = cleanV;
+                            if(cleanK === 'contenu' || cleanK === 'content') t_cont = cleanV;
+                            if(cleanK === 'indication') t_ind = cleanV;
+                            if(cleanK === 'couleur' || cleanK === 'color') t_col = cleanV;
+                        }
+                    });
+                }
+
                 if (l.startsWith('bouton') || l.startsWith('button')) {
                     let btn = document.createElement('button');
-                    btn.className = 'buko-btn Vert';
-                    btn.innerText = 'Bouton Actif';
+                    btn.className = `buko-btn ${t_col}`;
+                    btn.innerText = t_txt;
                     canvas.appendChild(btn);
                 } else if (l.startsWith('affichage_texte') || l.startsWith('text_display')) {
                     let txt = document.createElement('div');
                     txt.className = 'buko-text';
-                    txt.innerText = 'Élément Texte activé';
+                    txt.innerText = t_cont;
                     canvas.appendChild(txt);
-                } else if (l.startsWith('zone_saisie') || l.startsWith('input_field')) {
+                } else if (l.startsWith('zone_saisie') || l.startsWith('input_field') || l.startsWith('demander_')) {
                     let inp = document.createElement('input');
                     inp.className = 'buko-input';
-                    inp.placeholder = 'Saisie utilisateur...';
+                    inp.placeholder = t_ind;
                     canvas.appendChild(inp);
                 }
             });
@@ -192,4 +238,4 @@
         chargerBoiteOutils();
     </script>
 </body>
-</html>  
+</html> 
