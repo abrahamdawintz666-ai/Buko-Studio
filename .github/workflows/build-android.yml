@@ -1,0 +1,72 @@
+name: Build BuKo Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["principal", "main", "master"]
+    paths:
+      - "main.py"
+      - "buko_engine_v0_6.py"
+      - "buildozer.spec"
+      - ".github/workflows/build-android.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    name: Build debug APK
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Android build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git zip unzip openjdk-17-jdk \
+            python3-pip python3-venv \
+            autoconf libtool pkg-config \
+            zlib1g-dev libncurses5-dev libncursesw5-dev \
+            libtinfo6 cmake libffi-dev libssl-dev
+
+      - name: Install Buildozer and Cython
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install "Cython==0.29.33" "buildozer==1.5.0"
+
+      - name: Check required project files
+        run: |
+          test -f main.py || (echo "ERROR: main.py is missing" && exit 1)
+          test -f buko_engine_v0_6.py || (echo "ERROR: BuKo engine is missing" && exit 1)
+          test -f buildozer.spec || (echo "ERROR: buildozer.spec is missing" && exit 1)
+          python -m py_compile main.py buko_engine_v0_6.py
+
+      - name: Build Android debug APK
+        run: buildozer -v android debug
+
+      - name: Show generated APK files
+        if: always()
+        run: |
+          echo "Files found in bin/:"
+          if [ -d bin ]; then
+            find bin -maxdepth 2 -type f -print
+          else
+            echo "bin/ directory was not created"
+          fi
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: buko-studio-mobile-debug-apk
+          path: bin/*.apk
+          if-no-files-found: error
+          retention-days: 14
