@@ -1,72 +1,94 @@
-name: Build BuKo Android APK
+name: Creer une application Android BuKo
 
 on:
   workflow_dispatch:
   push:
-    branches: ["principal", "main", "master"]
+    branches:
+      - principal
+      - maitre
     paths:
       - "main.py"
-      - "buko_engine_v0_6.py"
       - "buildozer.spec"
       - ".github/workflows/build-android.yml"
+      - "*.py"
+      - "*.kv"
+      - "*.png"
+      - "*.jpg"
 
 permissions:
   contents: read
 
 jobs:
-  build-apk:
-    name: Build debug APK
+  creer-apk:
+    name: Construire APK Android
     runs-on: ubuntu-22.04
     timeout-minutes: 90
 
+    env:
+      PYTHONUNBUFFERED: "1"
+      P4A_RELEASE: "0"
+
     steps:
-      - name: Check out repository
+      - name: Recuperer le depot
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Verifier les fichiers requis
+        run: |
+          test -f main.py || { echo "ERREUR: main.py absent"; exit 1; }
+          test -f buildozer.spec || { echo "ERREUR: buildozer.spec absent"; exit 1; }
+          echo "Fichiers requis trouves."
+          python -m py_compile main.py
+
+      - name: Installer Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Configurer Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install Android build dependencies
+      - name: Installer les dependances systeme
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            git zip unzip openjdk-17-jdk \
-            python3-pip python3-venv \
-            autoconf libtool pkg-config \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential ccache git zip unzip \
+            autoconf automake libtool pkg-config \
             zlib1g-dev libncurses5-dev libncursesw5-dev \
-            libtinfo6 cmake libffi-dev libssl-dev
+            libtinfo6 cmake libffi-dev libssl-dev \
+            libltdl-dev
 
-      - name: Install Buildozer and Cython
+      - name: Installer Buildozer
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install "Cython==0.29.33" "buildozer==1.5.0"
+          buildozer --version
 
-      - name: Check required project files
+      - name: Accepter les licences Android sans interaction
         run: |
-          test -f main.py || (echo "ERROR: main.py is missing" && exit 1)
-          test -f buko_engine_v0_6.py || (echo "ERROR: BuKo engine is missing" && exit 1)
-          test -f buildozer.spec || (echo "ERROR: buildozer.spec is missing" && exit 1)
-          python -m py_compile main.py buko_engine_v0_6.py
+          sed -i 's/^# *android.accept_sdk_license.*/android.accept_sdk_license = True/' buildozer.spec
+          grep -n 'android.accept_sdk_license' buildozer.spec || true
 
-      - name: Build Android debug APK
-        run: buildozer -v android debug
+      - name: Construire APK de debogage
+        run: |
+          buildozer -v android debug 2>&1 | tee build-android.log
 
-      - name: Show generated APK files
+      - name: Publier le journal de compilation
         if: always()
-        run: |
-          echo "Files found in bin/:"
-          if [ -d bin ]; then
-            find bin -maxdepth 2 -type f -print
-          else
-            echo "bin/ directory was not created"
-          fi
-
-      - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: buko-studio-mobile-debug-apk
+          name: journal-compilation-buko
+          path: build-android.log
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Verifier et publier APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: buko-studio-android-debug-apk
           path: bin/*.apk
           if-no-files-found: error
           retention-days: 14
