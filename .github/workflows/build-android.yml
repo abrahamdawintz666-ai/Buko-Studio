@@ -14,6 +14,7 @@ on:
       - "*.kv"
       - "*.png"
       - "*.jpg"
+      - "*.jpeg"
 
 permissions:
   contents: read
@@ -26,7 +27,6 @@ jobs:
 
     env:
       PYTHONUNBUFFERED: "1"
-      P4A_RELEASE: "0"
 
     steps:
       - name: Recuperer le depot
@@ -34,10 +34,17 @@ jobs:
 
       - name: Verifier les fichiers requis
         run: |
-          test -f main.py || { echo "ERREUR: main.py absent"; exit 1; }
-          test -f buildozer.spec || { echo "ERREUR: buildozer.spec absent"; exit 1; }
+          set -eu
+          test -f main.py || {
+            echo "ERREUR: main.py absent"
+            exit 1
+          }
+          test -f buildozer.spec || {
+            echo "ERREUR: buildozer.spec absent"
+            exit 1
+          }
           echo "Fichiers requis trouves."
-          python -m py_compile main.py
+          python3 -m py_compile main.py
 
       - name: Installer Java
         uses: actions/setup-java@v4
@@ -49,11 +56,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
 
       - name: Installer les dependances systeme
         run: |
           sudo apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
             build-essential ccache git zip unzip \
             autoconf automake libtool pkg-config \
             zlib1g-dev libncurses5-dev libncursesw5-dev \
@@ -66,13 +74,54 @@ jobs:
           python -m pip install "Cython==0.29.33" "buildozer==1.5.0"
           buildozer --version
 
-      - name: Accepter les licences Android sans interaction
+      - name: Configurer la licence Android
         run: |
-          sed -i 's/^# *android.accept_sdk_license.*/android.accept_sdk_license = True/' buildozer.spec
-          grep -n 'android.accept_sdk_license' buildozer.spec || true
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path("buildozer.spec")
+          content = path.read_text(encoding="utf-8")
+          lines = content.splitlines()
+
+          pattern = re.compile(
+              r"^\s*#?\s*android\.accept_sdk_license\s*=.*$"
+          )
+
+          for index, line in enumerate(lines):
+              if pattern.match(line):
+                  lines[index] = "android.accept_sdk_license = True"
+                  break
+          else:
+              app_index = next(
+                  (
+                      i for i, line in enumerate(lines)
+                      if line.strip().lower() == "[app]"
+                  ),
+                  None,
+              )
+              if app_index is None:
+                  raise SystemExit(
+                      "ERREUR: section [app] introuvable dans buildozer.spec"
+                  )
+              lines.insert(
+                  app_index + 1,
+                  "android.accept_sdk_license = True",
+              )
+
+          path.write_text(
+              "\n".join(lines) + "\n",
+              encoding="utf-8",
+          )
+          print("Configuration de licence verifiee.")
+          PY
+
+          grep -n "android.accept_sdk_license" buildozer.spec
 
       - name: Construire APK de debogage
+        shell: bash
         run: |
+          set -o pipefail
           buildozer -v android debug 2>&1 | tee build-android.log
 
       - name: Publier le journal de compilation
@@ -84,7 +133,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      - name: Verifier et publier APK
+      - name: Publier les APK generes
         if: success()
         uses: actions/upload-artifact@v4
         with:
