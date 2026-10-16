@@ -42,9 +42,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install "Cython==0.29.33" "buildozer==1.5.0"
+      - name: Clean previous Android build
+        run: |
+          rm -rf .buildozer bin
 
       - name: Build Android debug APK
         run: buildozer -v android debug
+        
 
       - name: Upload APK artifact
         if: always()
