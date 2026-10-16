@@ -1,3 +1,4 @@
+
 name: Creer une application Android BuKo
 
 on:
@@ -27,6 +28,7 @@ jobs:
 
     env:
       PYTHONUNBUFFERED: "1"
+      P4A_BRANCH: master
 
     steps:
       - name: Recuperer le depot
@@ -35,16 +37,10 @@ jobs:
       - name: Verifier les fichiers requis
         run: |
           set -eu
-          test -f main.py || {
-            echo "ERREUR: main.py absent"
-            exit 1
-          }
-          test -f buildozer.spec || {
-            echo "ERREUR: buildozer.spec absent"
-            exit 1
-          }
-          echo "Fichiers requis trouves."
+          test -f main.py
+          test -f buildozer.spec
           python3 -m py_compile main.py
+          echo "Fichiers requis trouves."
 
       - name: Installer Java
         uses: actions/setup-java@v4
@@ -73,49 +69,9 @@ jobs:
           python -m pip install "Cython==0.29.33" "buildozer==1.5.0"
           buildozer --version
 
-      - name: Configurer la licence Android
+      - name: Verifier la configuration Android
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
-
-          path = Path("buildozer.spec")
-          content = path.read_text(encoding="utf-8")
-          lines = content.splitlines()
-
-          pattern = re.compile(
-              r"^\s*#?\s*android\.accept_sdk_license\s*=.*$"
-          )
-
-          for index, line in enumerate(lines):
-              if pattern.match(line):
-                  lines[index] = "android.accept_sdk_license = True"
-                  break
-          else:
-              app_index = next(
-                  (
-                      i for i, line in enumerate(lines)
-                      if line.strip().lower() == "[app]"
-                  ),
-                  None,
-              )
-              if app_index is None:
-                  raise SystemExit(
-                      "ERREUR: section [app] introuvable dans buildozer.spec"
-                  )
-              lines.insert(
-                  app_index + 1,
-                  "android.accept_sdk_license = True",
-              )
-
-          path.write_text(
-              "\n".join(lines) + "\n",
-              encoding="utf-8",
-          )
-          print("Configuration de licence verifiee.")
-          PY
-
-          grep -n "android.accept_sdk_license" buildozer.spec
+          grep -nE '^(requirements|p4a.branch|android.api|android.minapi|android.archs)' buildozer.spec
 
       - name: Construire APK de debogage
         shell: bash
