@@ -29,6 +29,8 @@ jobs:
         with:
           python-version: "3.11"
 
+ 
+
       - name: Install Android build dependencies
         run: |
           sudo apt-get update
@@ -45,6 +47,16 @@ jobs:
       - name: Clean previous Android build
         run: |
           rm -rf .buildozer bin
+
+
+      - name: Clean previous Android build
+        run: |
+          rm -rf .buildozer bin
+
+      - name: Build Android debug APK
+        run: buildozer -v android debug
+
+
 
       - name: Build Android debug APK
         run: buildozer -v android debug
